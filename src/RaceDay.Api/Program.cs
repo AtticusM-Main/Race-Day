@@ -14,7 +14,6 @@ using RaceDay.Api.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------- Database (EF Core, code-first) ----------
 // The test project swaps in an in-memory database, so SQL Server is only registered outside tests.
 if (!builder.Environment.IsEnvironment("Testing"))
 {
@@ -22,9 +21,6 @@ if (!builder.Environment.IsEnvironment("Testing"))
         options.UseSqlServer(builder.Configuration.GetConnectionString("RaceDayDb")));
 }
 
-// ---------- Authentication: JWT bearer tokens ----------
-// Login issues a signed token holding the user's id and role. The client sends it on every request,
-// which keeps the user's authenticated session and role without storing session state on the server.
 var jwtSection = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(jwtSection);
 var jwtSettings = jwtSection.Get<JwtSettings>()
@@ -62,7 +58,6 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
 
-// ---------- Swagger ----------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -85,7 +80,6 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Paste the token returned by POST /api/auth/login."
     });
 
-    // XML comments first, so the auth filter can add the role note to their summaries.
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFile));
     options.OperationFilter<AuthorizeOperationFilter>();
@@ -93,7 +87,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Create/upgrade the database from the EF migrations on startup (includes the seed data).
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RaceDayDbContext>();
@@ -119,5 +112,4 @@ app.MapControllers();
 
 app.Run();
 
-// Lets the test project start the API in memory with WebApplicationFactory<Program>.
 public partial class Program;

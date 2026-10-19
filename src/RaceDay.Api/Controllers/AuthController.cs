@@ -45,7 +45,6 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<RegisterResponse>> Register(RegisterRequest request)
     {
-        // Users can only pick one of the roles that exist in the Role table.
         var role = (await _db.Roles.ToListAsync())
             .FirstOrDefault(r => string.Equals(r.RoleName, request.Role.Trim(), StringComparison.OrdinalIgnoreCase));
 

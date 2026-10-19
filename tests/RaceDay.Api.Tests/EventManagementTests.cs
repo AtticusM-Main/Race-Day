@@ -16,8 +16,6 @@ public class EventManagementTests : ApiTestBase
     {
     }
 
-    // ---------- Create ----------
-
     [Fact]
     public async Task Organiser_CreateEvent_Returns201AndSavesEventWithOrganiserAsOwner()
     {
@@ -101,8 +99,6 @@ public class EventManagementTests : ApiTestBase
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // ---------- Update ----------
-
     [Fact]
     public async Task Organiser_UpdateOwnEvent_Returns200AndSavesChanges()
     {
@@ -150,8 +146,6 @@ public class EventManagementTests : ApiTestBase
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    // ---------- Delete ----------
-
     [Fact]
     public async Task Organiser_DeleteOwnEvent_Returns204AndEventIsGone()
     {
@@ -189,8 +183,6 @@ public class EventManagementTests : ApiTestBase
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    // ---------- View ----------
-
     [Fact]
     public async Task AnyoneCanViewEvents_IncludingSeededEvents()
     {
@@ -222,8 +214,6 @@ public class EventManagementTests : ApiTestBase
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
-
-    // ---------- Categories ----------
 
     [Fact]
     public async Task Organiser_AddsAgeAndDistanceCategories_AndParticipantCanViewThem()

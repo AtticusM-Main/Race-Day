@@ -32,7 +32,6 @@ public class EnrolmentTests : ApiTestBase
         Assert.Equal(category.CategoryId, enrolment.CategoryId);
         Assert.Equal("21km", enrolment.CategoryName);
 
-        // Check what was actually written to the database.
         var saved = await Factory.QueryDbAsync(db => db.Enrolments
             .Include(e => e.Category)
             .SingleAsync(e => e.EnrolmentId == enrolment.EnrolmentId));

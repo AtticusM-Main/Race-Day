@@ -73,7 +73,6 @@ public class RaceDayDbContext : DbContext
             entity.Property(c => c.Name).HasMaxLength(100).IsUnicode(false).IsRequired();
             entity.Property(c => c.Distance).HasColumnType("decimal(5,2)");
 
-            // Deleting an event removes its categories (and their enrolments/results).
             entity.HasOne(c => c.Event)
                 .WithMany(e => e.Categories)
                 .HasForeignKey(c => c.EventId)
@@ -107,7 +106,6 @@ public class RaceDayDbContext : DbContext
             entity.Property(r => r.FinishTime).HasColumnType("time");
             entity.Property(r => r.RecordedAt).HasColumnType("datetime").HasDefaultValueSql("GETDATE()");
 
-            // One result per enrolment.
             entity.HasIndex(r => r.EnrolmentId).IsUnique();
             entity.HasOne(r => r.Enrolment)
                 .WithOne(e => e.Result)

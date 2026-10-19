@@ -16,8 +16,6 @@ public class AuthTests : ApiTestBase
     {
     }
 
-    // ---------- Registration ----------
-
     [Theory]
     [InlineData("Participant")]
     [InlineData("Organiser")]
@@ -89,8 +87,6 @@ public class AuthTests : ApiTestBase
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    // ---------- Login ----------
-
     [Fact]
     public async Task Login_WithValidCredentials_Returns200WithTokenAndRole()
     {
@@ -133,8 +129,6 @@ public class AuthTests : ApiTestBase
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // ---------- Authenticated vs unauthenticated requests ----------
-
     [Fact]
     public async Task ProtectedEndpoint_WithoutToken_Returns401()
     {
@@ -174,8 +168,6 @@ public class AuthTests : ApiTestBase
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
-    // ---------- Profile ----------
 
     [Theory]
     [InlineData("Organiser")]
