@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# ---------- Build stage: restore and publish the MVC application ----------
+# Build stage: restore and publish the MVC application
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -15,7 +15,7 @@ RUN dotnet publish src/RaceDay.Web/RaceDay.Web.csproj \
     --output /app/publish \
     /p:UseAppHost=false
 
-# ---------- Runtime stage: small ASP.NET Core image, runs as a non-root user ----------
+# Runtime stage: small ASP.NET Core image, runs as a non-root user
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
