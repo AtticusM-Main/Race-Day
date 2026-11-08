@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore RaceDay.sln
+
+      - name: Build API
+        run: dotnet build src/RaceDay.Api/RaceDay.Api.csproj --configuration Release --no-restore
+
+      - name: Build MVC web application
+        run: dotnet build src/RaceDay.Web/RaceDay.Web.csproj --configuration Release --no-restore
+
+      - name: Test (API and MVC)
+        run: dotnet test RaceDay.sln --configuration Release --no-restore --verbosity normal
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Build the MVC Docker image
+        run: docker build --tag raceday-web:ci .
+
+      - name: Build the API Docker image
+        run: docker build --file src/RaceDay.Api/Dockerfile --tag raceday-api:ci .
+
+      - name: Smoke test the MVC container
+        run: |
+          docker run --detach --name raceday-web -p 8080:8080 -e Api__BaseUrl=http://localhost:5259 raceday-web:ci
+          for i in $(seq 1 20); do
+            if curl --silent --fail --output /dev/null http://localhost:8080/; then
+              echo "The MVC container is serving pages."
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs raceday-web
+          exit 1
