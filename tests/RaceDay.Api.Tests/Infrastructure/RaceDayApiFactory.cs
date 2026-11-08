@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using RaceDay.Api.Data;
+using RaceDay.Api.Services;
 
 namespace RaceDay.Api.Tests.Infrastructure;
 
@@ -13,6 +15,8 @@ namespace RaceDay.Api.Tests.Infrastructure;
 /// </summary>
 public class RaceDayApiFactory : WebApplicationFactory<Program>
 {
+    public FakeImageStorage Images { get; } = new();
+
     private readonly string _databaseName = $"RaceDayTests-{Guid.NewGuid()}";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -23,6 +27,8 @@ public class RaceDayApiFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.AddDbContext<RaceDayDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+            services.RemoveAll<IImageStorage>();
+            services.AddSingleton<IImageStorage>(Images);
         });
     }
 
