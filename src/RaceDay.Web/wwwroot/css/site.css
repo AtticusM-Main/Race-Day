@@ -16,7 +16,9 @@
 
   --bs-primary: var(--rd-orange);
   --bs-primary-rgb: 255, 90, 31;
-  --bs-link-color: var(--rd-orange-dark);
+  --bs-link-color: #e04a12;
+  --bs-link-color-rgb: 224, 74, 18;
+  --bs-link-hover-color-rgb: 184, 58, 8;
   --bs-link-hover-color: #b83a08;
   --bs-body-font-family: "Inter", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
   --bs-body-color: #1d2733;
