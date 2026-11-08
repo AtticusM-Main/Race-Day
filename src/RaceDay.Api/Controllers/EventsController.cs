@@ -31,15 +31,56 @@ public class EventsController : ControllerBase
         .Include(e => e.Categories).ThenInclude(c => c.Enrolments);
 
     /// <summary>
-    /// List all events, soonest first.
+    /// List events, soonest first. All filters are optional and can be combined.
     /// </summary>
+    /// <param name="search">Text to look for in the event name, description or location.</param>
+    /// <param name="type">Only events of this type: Run, Walk or Cycle.</param>
+    /// <param name="from">Only events on or after this date.</param>
+    /// <param name="to">Only events on or before this date.</param>
+    /// <param name="upcomingOnly">When true, hides events that have already taken place.</param>
     /// <response code="200">Array of events, each with its categories.</response>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IEnumerable<EventResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<EventResponse>>> GetEvents()
+    public async Task<ActionResult<IEnumerable<EventResponse>>> GetEvents(
+        string? search = null, EventType? type = null, DateTime? from = null, DateTime? to = null, bool upcomingOnly = false)
     {
-        var events = await EventsWithDetails().AsNoTracking().OrderBy(e => e.EventDate).ToListAsync();
+        var query = EventsWithDetails().AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(e => e.Name.Contains(term) || e.Location.Contains(term) ||
+                                     (e.Description != null && e.Description.Contains(term)));
+        }
+        if (type is not null) query = query.Where(e => e.EventType == type);
+        if (from is not null) query = query.Where(e => e.EventDate >= from);
+        if (to is not null) query = query.Where(e => e.EventDate < to.Value.Date.AddDays(1));
+        if (upcomingOnly) query = query.Where(e => e.EventDate >= DateTime.Now);
+
+        var events = await query.OrderBy(e => e.EventDate).ToListAsync();
+        return Ok(events.Select(e => e.ToResponse()));
+    }
+
+    /// <summary>
+    /// List the events created by the logged-in Organiser, soonest first.
+    /// </summary>
+    /// <response code="200">Array of the Organiser's events, each with its categories and enrolment counts.</response>
+    /// <response code="401">Not logged in.</response>
+    /// <response code="403">Logged in, but not an Organiser.</response>
+    [HttpGet("mine")]
+    [Authorize(Roles = Role.Organiser)]
+    [ProducesResponseType(typeof(IEnumerable<EventResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IEnumerable<EventResponse>>> GetMyEvents()
+    {
+        var organiserId = User.GetUserId();
+        var events = await EventsWithDetails().AsNoTracking()
+            .Where(e => e.OrganiserId == organiserId)
+            .OrderBy(e => e.EventDate)
+            .ToListAsync();
+
         return Ok(events.Select(e => e.ToResponse()));
     }
 
