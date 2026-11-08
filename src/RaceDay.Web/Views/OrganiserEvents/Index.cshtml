@@ -1,0 +1,65 @@
+@model List<EventDto>
+@{
+    ViewData["Title"] = "Manage events";
+}
+<div class="container pb-5">
+    <div class="rd-page-head">
+        <div>
+            <h1>Manage events</h1>
+            <p>Create, edit and delete your events, categories and results.</p>
+        </div>
+        <a class="btn btn-primary" asp-action="Create">Create event</a>
+    </div>
+
+    @if (ViewData["LoadError"] is string loadError)
+    {
+        <div class="alert alert-danger" role="alert">@loadError</div>
+    }
+    else if (Model.Count == 0)
+    {
+        <partial name="_EmptyState" model='("🏃", "No events yet", "Create your first event to start receiving entries.")' />
+    }
+    else
+    {
+        <div class="rd-card rd-table-wrap">
+            <div class="table-responsive">
+                <table class="table table-hover rd-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Event</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Distance</th>
+                            <th scope="col" class="text-center">Enrolments</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ev in Model.OrderByDescending(e => e.EventDate))
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">@ev.Name</div>
+                                    <div class="small text-muted">@ev.Location</div>
+                                </td>
+                                <td><span class="rd-type-badge">@ev.EventType</span></td>
+                                <td>@ev.EventDate.ToString("d MMM yyyy, HH:mm")</td>
+                                <td>@ev.Distance.ToString("0.##") km</td>
+                                <td class="text-center fw-semibold">@ev.TotalEnrolments</td>
+                                <td class="text-end text-nowrap">
+                                    <a class="btn btn-outline-dark btn-sm" asp-controller="OrganiserCategories" asp-action="Index" asp-route-eventId="@ev.EventId">Categories</a>
+                                    <a class="btn btn-outline-dark btn-sm" asp-controller="OrganiserEnrolments" asp-action="Index" asp-route-eventId="@ev.EventId">Enrolments</a>
+                                    <a class="btn btn-outline-dark btn-sm" asp-controller="OrganiserResults" asp-action="Index" asp-route-eventId="@ev.EventId">Results</a>
+                                    <a class="btn btn-dark btn-sm" asp-action="Edit" asp-route-id="@ev.EventId">Edit</a>
+                                    <form asp-action="Delete" asp-route-id="@ev.EventId" method="post" class="d-inline" data-confirm="Delete &quot;@ev.Name&quot; and all of its categories, enrolments and results? This cannot be undone.">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,87 @@
+@model EventFormViewModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Edit event" : "Create event";
+}
+<div class="container pb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Manage events</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+        </ol>
+    </nav>
+
+    <div class="rd-page-head">
+        <h1>@ViewData["Title"]</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate asp-action="@(Model.IsEdit ? "Edit" : "Create")" asp-route-id="@Model.EventId">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="rd-card">
+                    <div class="rd-card-body">
+                        <div class="mb-3">
+                            <label asp-for="Form.Name" class="form-label"></label>
+                            <input asp-for="Form.Name" class="form-control" />
+                            <span asp-validation-for="Form.Name" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Form.Description" class="form-label"></label>
+                            <textarea asp-for="Form.Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Form.Description" class="text-danger"></span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Form.EventDate" class="form-label"></label>
+                                <input asp-for="Form.EventDate" type="datetime-local" class="form-control" />
+                                <span asp-validation-for="Form.EventDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Form.Location" class="form-label"></label>
+                                <input asp-for="Form.Location" class="form-control" />
+                                <span asp-validation-for="Form.Location" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Form.Distance" class="form-label"></label>
+                                <input asp-for="Form.Distance" type="number" step="0.01" min="0.1" max="999.99" class="form-control" />
+                                <span asp-validation-for="Form.Distance" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Form.EventType" class="form-label"></label>
+                                <select asp-for="Form.EventType" class="form-select" asp-items="Html.GetEnumSelectList<EventType>()">
+                                    <option value="">Choose a type...</option>
+                                </select>
+                                <span asp-validation-for="Form.EventType" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="rd-card">
+                    <div class="rd-card-body">
+                        <h2>Banner image</h2>
+                        @if (!string.IsNullOrEmpty(Model.CurrentBannerUrl))
+                        {
+                            <img class="img-fluid rounded mb-3" src="@Model.CurrentBannerUrl" alt="Current event banner" />
+                        }
+                        <img id="banner-preview" class="img-fluid rounded mb-3" alt="Preview of the selected banner" hidden />
+                        <label for="Banner" class="form-label">@(Model.IsEdit ? "Replace banner" : "Upload banner")</label>
+                        <input asp-for="Banner" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp" data-preview="#banner-preview" />
+                        <div class="form-text">Optional. JPG, PNG or WebP, up to 5 MB. Stored in Azure Blob Storage.</div>
+                        <span asp-validation-for="Banner" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" data-busy="Saving...">@(Model.IsEdit ? "Save changes" : "Create event")</button>
+            <a class="btn btn-outline-dark" asp-action="Index">Cancel</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
