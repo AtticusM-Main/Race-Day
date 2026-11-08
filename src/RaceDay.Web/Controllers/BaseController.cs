@@ -44,13 +44,14 @@ public abstract class BaseController : Controller
     }
 
     /// <summary>Copies API validation messages onto the form so they show next to the matching fields.</summary>
-    protected void AddApiErrors(ApiResult result)
+    protected void AddApiErrors(ApiResult result, string? prefix = null)
     {
         if (result.FieldErrors.Count > 0)
         {
             foreach (var (field, messages) in result.FieldErrors)
             {
-                var key = field.Length > 0 ? char.ToUpperInvariant(field[0]) + field[1..] : string.Empty;
+                var name = field.Length > 0 ? char.ToUpperInvariant(field[0]) + field[1..] : string.Empty;
+                var key = string.IsNullOrEmpty(prefix) ? name : $"{prefix}.{name}";
                 foreach (var message in messages) ModelState.AddModelError(key, message);
             }
         }
