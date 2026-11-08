@@ -54,6 +54,9 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+builder.Services.Configure<BlobStorageSettings>(builder.Configuration.GetSection("BlobStorage"));
+builder.Services.AddSingleton<IImageStorage, AzureBlobImageStorage>();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
