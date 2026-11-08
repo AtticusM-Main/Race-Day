@@ -1,0 +1,113 @@
+@model OrganiserDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="container pb-5">
+    <div class="rd-page-head">
+        <div>
+            <h1>Organiser dashboard</h1>
+            <p>Your events, entries and what is coming up next.</p>
+        </div>
+        <a class="btn btn-primary" asp-controller="OrganiserEvents" asp-action="Create">Create event</a>
+    </div>
+
+    @if (ViewData["LoadError"] is string loadError)
+    {
+        <div class="alert alert-danger" role="alert">@loadError</div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="rd-card rd-stat"><div class="rd-stat-value">@Model.TotalEvents</div><div class="rd-stat-label">Events created</div></div>
+            </div>
+            <div class="col-sm-4">
+                <div class="rd-card rd-stat"><div class="rd-stat-value">@Model.TotalEnrolments</div><div class="rd-stat-label">Total enrolments</div></div>
+            </div>
+            <div class="col-sm-4">
+                <div class="rd-card rd-stat"><div class="rd-stat-value">@Model.Upcoming.Count</div><div class="rd-stat-label">Upcoming events</div></div>
+            </div>
+        </div>
+
+        @if (Model.Events.Count == 0)
+        {
+            <partial name="_EmptyState" model='("🏃", "No events yet", "Create your first event to start receiving entries.")' />
+        }
+        else
+        {
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="rd-card">
+                        <div class="rd-card-body">
+                            <h2>Coming up</h2>
+                            @if (Model.Upcoming.Count == 0)
+                            {
+                                <p class="text-muted mb-0">No upcoming events. Create one to get going.</p>
+                            }
+                            else
+                            {
+                                <ul class="list-unstyled mb-0 d-grid gap-3">
+                                    @foreach (var ev in Model.Upcoming)
+                                    {
+                                        <li class="d-flex gap-3 align-items-center">
+                                            <div class="rd-date-chip" aria-hidden="true">
+                                                <small>@ev.EventDate.ToString("MMM")</small>
+                                                <strong>@ev.EventDate.Day</strong>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">@ev.Name</div>
+                                                <div class="small text-muted">@ev.EventDate.ToString("ddd d MMM, HH:mm") &middot; @ev.TotalEnrolments entered</div>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="rd-card rd-table-wrap">
+                        <div class="table-responsive">
+                            <table class="table table-hover rd-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Event</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col" class="text-center">Categories</th>
+                                        <th scope="col" class="text-center">Enrolments</th>
+                                        <th scope="col" class="text-end">Manage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ev in Model.Events.OrderByDescending(e => e.EventDate))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">@ev.Name</div>
+                                                <div class="small text-muted">@ev.Location</div>
+                                            </td>
+                                            <td>
+                                                @ev.EventDate.ToString("d MMM yyyy")
+                                                @if (ev.HasPassed)
+                                                {
+                                                    <span class="rd-status rd-status-completed ms-1">Done</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">@ev.Categories.Count</td>
+                                            <td class="text-center fw-semibold">@ev.TotalEnrolments</td>
+                                            <td class="text-end text-nowrap">
+                                                <a class="btn btn-outline-dark btn-sm" asp-controller="OrganiserEnrolments" asp-action="Index" asp-route-eventId="@ev.EventId">Enrolments</a>
+                                                <a class="btn btn-outline-dark btn-sm" asp-controller="OrganiserEvents" asp-action="Edit" asp-route-id="@ev.EventId">Edit</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
