@@ -18,10 +18,13 @@ document.querySelectorAll('input[type="file"][data-preview]').forEach(function (
 });
 
 document.querySelectorAll('form').forEach(function (form) {
-    form.addEventListener('submit', function () {
+    form.addEventListener('submit', function (event) {
         var button = form.querySelector('button[type="submit"][data-busy]');
         if (button && form.checkValidity()) {
             setTimeout(function () {
+                // jQuery unobtrusive validation turns off the browser's own checks, so ask it too.
+                var jqueryValid = !(window.jQuery && jQuery.fn.valid) || jQuery(form).valid();
+                if (event.defaultPrevented || !jqueryValid) return;
                 button.disabled = true;
                 button.textContent = button.getAttribute('data-busy');
             }, 0);
