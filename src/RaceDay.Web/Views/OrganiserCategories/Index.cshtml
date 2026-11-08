@@ -1,0 +1,94 @@
+@model CategoriesViewModel
+@{
+    ViewData["Title"] = "Categories";
+}
+<div class="container pb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="OrganiserEvents" asp-action="Index">Manage events</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Event.Name</li>
+        </ol>
+    </nav>
+
+    <div class="rd-page-head">
+        <div>
+            <h1>Categories</h1>
+            <p>@Model.Event.Name &middot; @Model.Event.EventDate.ToString("d MMM yyyy")</p>
+        </div>
+        <a class="btn btn-outline-dark" asp-controller="OrganiserEnrolments" asp-action="Index" asp-route-eventId="@Model.Event.EventId">View enrolments</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            @if (Model.Event.Categories.Count == 0)
+            {
+                <partial name="_EmptyState" model='("🏷️", "No categories yet", "Add an age or distance category so participants can enter.")' />
+            }
+            else
+            {
+                <div class="rd-card rd-table-wrap">
+                    <div class="table-responsive">
+                        <table class="table table-hover rd-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Category</th>
+                                    <th scope="col">Distance</th>
+                                    <th scope="col">Entries</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in Model.Event.Categories)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@c.Name</td>
+                                        <td>@(c.Distance is null ? "-" : c.Distance.Value.ToString("0.##") + " km")</td>
+                                        <td>@c.EnrolledCount@(c.MaxParticipants is null ? "" : " / " + c.MaxParticipants)</td>
+                                        <td class="text-end text-nowrap">
+                                            <a class="btn btn-dark btn-sm" asp-action="Edit" asp-route-eventId="@Model.Event.EventId" asp-route-id="@c.CategoryId">Edit</a>
+                                            <form asp-action="Delete" asp-route-eventId="@Model.Event.EventId" asp-route-id="@c.CategoryId" method="post" class="d-inline" data-confirm="Delete the &quot;@c.Name&quot; category? Anyone enrolled in it will lose their entry.">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            <div class="rd-card">
+                <div class="rd-card-body">
+                    <h2>Add a category</h2>
+                    <form asp-action="Create" asp-route-eventId="@Model.Event.EventId" method="post" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <div class="mb-3">
+                            <label asp-for="NewCategory.Name" class="form-label"></label>
+                            <input asp-for="NewCategory.Name" class="form-control" placeholder="e.g. 10km, Under 20, Masters" />
+                            <span asp-validation-for="NewCategory.Name" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewCategory.Distance" class="form-label"></label>
+                            <input asp-for="NewCategory.Distance" type="number" step="0.01" min="0.1" max="999.99" class="form-control" />
+                            <div class="form-text">Leave empty for age-based categories.</div>
+                            <span asp-validation-for="NewCategory.Distance" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewCategory.MaxParticipants" class="form-label"></label>
+                            <input asp-for="NewCategory.MaxParticipants" type="number" min="1" class="form-control" />
+                            <div class="form-text">Leave empty for no limit.</div>
+                            <span asp-validation-for="NewCategory.MaxParticipants" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-busy="Adding...">Add category</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

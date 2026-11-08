@@ -1,0 +1,45 @@
+@model CategoryEditViewModel
+@{
+    ViewData["Title"] = "Edit category";
+}
+<div class="container pb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="OrganiserEvents" asp-action="Index">Manage events</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index" asp-route-eventId="@Model.Event.EventId">@Model.Event.Name</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit category</li>
+        </ol>
+    </nav>
+
+    <div class="rd-page-head"><h1>Edit category</h1></div>
+
+    <div class="rd-card" style="max-width: 560px;">
+        <div class="rd-card-body">
+            <form asp-action="Edit" asp-route-eventId="@Model.Event.EventId" asp-route-id="@Model.CategoryId" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <div class="mb-3">
+                    <label asp-for="Form.Name" class="form-label"></label>
+                    <input asp-for="Form.Name" class="form-control" />
+                    <span asp-validation-for="Form.Name" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Form.Distance" class="form-label"></label>
+                    <input asp-for="Form.Distance" type="number" step="0.01" min="0.1" max="999.99" class="form-control" />
+                    <span asp-validation-for="Form.Distance" class="text-danger"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Form.MaxParticipants" class="form-label"></label>
+                    <input asp-for="Form.MaxParticipants" type="number" min="1" class="form-control" />
+                    <span asp-validation-for="Form.MaxParticipants" class="text-danger"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" data-busy="Saving...">Save changes</button>
+                    <a class="btn btn-outline-dark" asp-action="Index" asp-route-eventId="@Model.Event.EventId">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
