@@ -274,6 +274,3 @@ dotnet test
 
 - Part 3 (MVC web application): _add the link here_
 - Part 1 (planning): https://youtu.be/al-fq-1F6W8
-
-## Part 1 CI
-<img width="1090" height="702" alt="Part 1 CI run" src="https://github.com/user-attachments/assets/188a025f-3eb9-4ee6-9513-72a49d167d1e" />
