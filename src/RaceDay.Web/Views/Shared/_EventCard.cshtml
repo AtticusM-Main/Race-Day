@@ -1,0 +1,31 @@
+@model EventDto
+<article class="rd-card rd-event-card">
+    <div class="rd-event-banner-wrap">
+        @if (!string.IsNullOrEmpty(Model.BannerImageUrl))
+        {
+            <img src="@Model.BannerImageUrl" alt="Banner for @Model.Name" loading="lazy" />
+        }
+        else
+        {
+            <div class="rd-event-banner" aria-hidden="true"></div>
+        }
+        <span class="rd-type-badge">@Model.EventType</span>
+    </div>
+    <div class="rd-card-body d-flex flex-column flex-grow-1">
+        <div class="d-flex gap-3 align-items-start mb-2">
+            <div class="rd-date-chip" aria-hidden="true">
+                <small>@Model.EventDate.ToString("MMM")</small>
+                <strong>@Model.EventDate.Day</strong>
+            </div>
+            <div>
+                <h3 class="mb-1">@Model.Name</h3>
+                <div class="text-muted small">@Model.Location &middot; @Model.Distance.ToString("0.##") km</div>
+            </div>
+        </div>
+        <p class="text-muted small flex-grow-1">@(string.IsNullOrWhiteSpace(Model.Description) ? "More details coming soon." : Model.Description)</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="small text-muted">@Model.EventDate.ToString("ddd d MMM yyyy, HH:mm")</span>
+            <a class="btn btn-primary btn-sm" asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId">View event</a>
+        </div>
+    </div>
+</article>

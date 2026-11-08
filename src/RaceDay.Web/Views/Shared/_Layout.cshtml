@@ -1,47 +1,104 @@
-﻿<!DOCTYPE html>
+﻿@inject RaceDay.Web.Services.IUserSession Session
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    string Active(string c, string? a = null) => string.Equals(controller, c, StringComparison.OrdinalIgnoreCase) && (a is null || string.Equals(action, a, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+    var initials = string.Concat(Session.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RaceDay.Web</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - RaceDay</title>
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/RaceDay.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">RaceDay.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg rd-nav" aria-label="Main navigation">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+                        <rect width="40" height="40" rx="9" fill="#ff5a1f" />
+                        <path d="M8 29 L17 11 H33 L24 29 Z" fill="#fff" />
+                        <path d="M4 22 H14 M2 27 H11" stroke="#ffc300" stroke-width="3" stroke-linecap="round" />
+                    </svg>
+                    <span class="rd-logo-text">RACE<span>DAY</span></span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto">
+                        @if (Session.IsOrganiser)
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Organiser")" asp-controller="Organiser" asp-action="Dashboard">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("OrganiserEvents")" asp-controller="OrganiserEvents" asp-action="Index">Manage Events</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Profile")" asp-controller="Profile" asp-action="Index">Profile</a></li>
+                        }
+                        else if (Session.IsParticipant)
+                        {
+                            <li class="nav-item"><a class="nav-link @(Active("Home", "Index") + Active("Events"))" asp-controller="Home" asp-action="Index">Events</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Enrolments")" asp-controller="Enrolments" asp-action="Index">My Enrolments</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Results")" asp-controller="Results" asp-action="Index">My Results</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Profile")" asp-controller="Profile" asp-action="Index">Profile</a></li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index">Home</a></li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav align-items-lg-center gap-lg-2">
+                        @if (Session.IsAuthenticated)
+                        {
+                            <li class="nav-item d-flex align-items-center gap-2 px-lg-2 py-2 py-lg-0">
+                                @if (!string.IsNullOrEmpty(Session.ProfilePictureUrl))
+                                {
+                                    <img class="rd-avatar" src="@Session.ProfilePictureUrl" alt="" />
+                                }
+                                else
+                                {
+                                    <span class="rd-avatar" aria-hidden="true">@initials</span>
+                                }
+                                <span class="text-white fw-semibold">@Session.FullName</span>
+                                <span class="rd-role-pill">@Session.Role</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-light btn-sm">Log out</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Account", "Login")" asp-controller="Account" asp-action="Login">Log in</a></li>
+                            <li class="nav-item"><a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Register</a></li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - RaceDay.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main role="main">
+        <div class="container pt-4">
+            <partial name="_Flash" />
+        </div>
+        @RenderBody()
+    </main>
+
+    <footer class="rd-footer">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span><strong class="text-white">RACEDAY</strong> &middot; Organise it. Enter it. Race it.</span>
+            <span>&copy; @DateTime.Now.Year RaceDay</span>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
