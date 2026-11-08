@@ -9,9 +9,6 @@ namespace RaceDay.Web.Controllers;
 [SessionAuthorize]
 public class ProfileController : BaseController
 {
-    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
-    private const long MaxPictureBytes = 5 * 1024 * 1024;
-
     public ProfileController(IRaceDayApi api, IUserSession userSession) : base(api, userSession)
     {
     }
@@ -46,7 +43,7 @@ public class ProfileController : BaseController
     [HttpPost]
     public async Task<IActionResult> UploadPicture(IFormFile? picture)
     {
-        var problem = ValidatePicture(picture);
+        var problem = ImageRules.Validate(picture);
         if (problem is not null)
         {
             Failure(problem);
@@ -64,15 +61,6 @@ public class ProfileController : BaseController
         UserSession.ProfilePictureUrl = result.Data!.ProfilePictureUrl;
         Success("Your profile picture has been updated.");
         return RedirectToAction(nameof(Index));
-    }
-
-    public static string? ValidatePicture(IFormFile? file)
-    {
-        if (file is null || file.Length == 0) return "Choose an image to upload.";
-        if (file.Length > MaxPictureBytes) return "The image must be 5 MB or smaller.";
-        if (!AllowedExtensions.Contains(Path.GetExtension(file.FileName).ToLowerInvariant())) return "Only JPG, PNG or WebP images are allowed.";
-
-        return null;
     }
 
     private async Task<IActionResult> ShowFormWithErrorsAsync(UpdateProfileRequest form)
