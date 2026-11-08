@@ -1,0 +1,95 @@
+@model EventEnrolmentsViewModel
+@{
+    ViewData["Title"] = "Enter results";
+    var open = Model.Event.HasPassed;
+}
+<div class="container pb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="OrganiserEvents" asp-action="Index">Manage events</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Event.Name</li>
+        </ol>
+    </nav>
+
+    <div class="rd-page-head">
+        <div>
+            <h1>Enter results</h1>
+            <p>@Model.Event.Name &middot; @Model.Event.EventDate.ToString("d MMM yyyy")</p>
+        </div>
+        <a class="btn btn-outline-dark" asp-controller="OrganiserEnrolments" asp-action="Index" asp-route-eventId="@Model.Event.EventId">View enrolments</a>
+    </div>
+
+    @if (!open)
+    {
+        <div class="alert alert-warning" role="status">
+            Results can be entered once the event has taken place (@Model.Event.EventDate.ToString("ddd d MMM yyyy, HH:mm")).
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-light border" role="status">
+            Enter each participant's finish time as <strong>hh:mm:ss</strong> and their finishing position. Saving publishes the result to the participant straight away.
+        </div>
+    }
+
+    @if (Model.Enrolments.Count == 0)
+    {
+        <partial name="_EmptyState" model='("📭", "Nobody entered", "There are no enrolments to record results for.")' />
+    }
+    else
+    {
+        <div class="rd-card rd-table-wrap">
+            <div class="table-responsive">
+                <table class="table rd-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Participant</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Finish time (hh:mm:ss)</th>
+                            <th scope="col">Position</th>
+                            <th scope="col" class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Enrolments)
+                        {
+                            var formId = $"result-{e.EnrolmentId}";
+                            <tr>
+                                <td class="fw-semibold">@e.ParticipantName</td>
+                                <td>@e.CategoryName</td>
+                                <td>
+                                    @if (e.ResultId is not null)
+                                    {
+                                        <span class="rd-status rd-status-completed">Published</span>
+                                    }
+                                    else
+                                    {
+                                        <partial name="_StatusBadge" model="e.Status" />
+                                    }
+                                </td>
+                                <td style="min-width: 150px;">
+                                    <label class="visually-hidden" for="time-@e.EnrolmentId">Finish time for @e.ParticipantName</label>
+                                    <input id="time-@e.EnrolmentId" form="@formId" name="FinishTime" class="form-control form-control-sm" placeholder="00:48:30"
+                                           pattern="^([01]?\d|2[0-3]):[0-5]\d:[0-5]\d$" title="Use the format hh:mm:ss" required disabled="@(!open)"
+                                           value="@(e.FinishTime is TimeSpan ft ? Formatting.FinishTime(ft) : "")" />
+                                </td>
+                                <td style="min-width: 110px;">
+                                    <label class="visually-hidden" for="pos-@e.EnrolmentId">Finishing position for @e.ParticipantName</label>
+                                    <input id="pos-@e.EnrolmentId" form="@formId" name="Position" type="number" min="1" class="form-control form-control-sm" placeholder="1" disabled="@(!open)" value="@e.Position" />
+                                </td>
+                                <td class="text-end">
+                                    <form id="@formId" asp-action="Save" asp-route-eventId="@Model.Event.EventId" method="post">
+                                        <input type="hidden" name="EnrolmentId" value="@e.EnrolmentId" />
+                                        <input type="hidden" name="ResultId" value="@e.ResultId" />
+                                        <button type="submit" class="btn btn-primary btn-sm" disabled="@(!open)">@(e.ResultId is null ? "Publish" : "Update")</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
