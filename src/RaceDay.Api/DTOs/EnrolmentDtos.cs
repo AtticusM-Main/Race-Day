@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using RaceDay.Api.Models;
 
 namespace RaceDay.Api.DTOs;
 
@@ -22,4 +23,15 @@ public class EnrolmentResponse
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public DateTime EnrolmentDate { get; set; }
+
+    /// <summary>Pending until the Organiser confirms the entry.</summary>
+    public EnrolmentStatus Status { get; set; }
+}
+
+public class UpdateEnrolmentStatusRequest
+{
+    /// <summary>One of: Pending, Confirmed.</summary>
+    /// <example>Confirmed</example>
+    [Required]
+    public EnrolmentStatus? Status { get; set; }
 }

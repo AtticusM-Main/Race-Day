@@ -147,6 +147,35 @@ public class EnrolmentsController : ControllerBase
     }
 
     /// <summary>
+    /// Confirm (or revert to pending) an enrolment for an event owned by the logged-in Organiser.
+    /// </summary>
+    /// <param name="id">The enrolment id.</param>
+    /// <param name="request">The new status.</param>
+    /// <response code="200">The updated enrolment.</response>
+    /// <response code="400">Invalid status.</response>
+    /// <response code="401">Not logged in.</response>
+    /// <response code="403">Not an Organiser, or not the Organiser who owns the event.</response>
+    /// <response code="404">No enrolment with this id.</response>
+    [HttpPut("api/enrolments/{id:int}/status")]
+    [Authorize(Roles = Role.Organiser)]
+    [ProducesResponseType(typeof(EnrolmentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<EnrolmentResponse>> UpdateStatus(int id, UpdateEnrolmentStatusRequest request)
+    {
+        var enrolment = await EnrolmentsWithDetails().FirstOrDefaultAsync(e => e.EnrolmentId == id);
+        if (enrolment is null) return NotFound();
+        if (enrolment.Category.Event.OrganiserId != User.GetUserId()) return Forbid();
+
+        enrolment.Status = request.Status!.Value;
+        await _db.SaveChangesAsync();
+
+        return Ok(enrolment.ToResponse());
+    }
+
+    /// <summary>
     /// List all enrolments for an event owned by the logged-in Organiser.
     /// </summary>
     /// <param name="eventId">The event id.</param>

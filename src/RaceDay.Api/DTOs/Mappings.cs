@@ -52,7 +52,8 @@ public static class Mappings
         EventDate = enrolment.Category.Event.EventDate,
         CategoryId = enrolment.CategoryId,
         CategoryName = enrolment.Category.Name,
-        EnrolmentDate = enrolment.EnrolmentDate
+        EnrolmentDate = enrolment.EnrolmentDate,
+        Status = enrolment.Status
     };
 
     public static ResultResponse ToResponse(this Result result) => new()

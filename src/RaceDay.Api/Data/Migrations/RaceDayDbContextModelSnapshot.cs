@@ -113,6 +113,12 @@ namespace RaceDay.Api.Data.Migrations
                     b.Property<int>("ParticipantId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
                     b.HasKey("EnrolmentId");
 
                     b.HasIndex("CategoryId");
@@ -127,21 +133,24 @@ namespace RaceDay.Api.Data.Migrations
                             EnrolmentId = 1,
                             CategoryId = 2,
                             EnrolmentDate = new DateTime(2026, 9, 1, 8, 0, 0, 0, DateTimeKind.Unspecified),
-                            ParticipantId = 3
+                            ParticipantId = 3,
+                            Status = "Confirmed"
                         },
                         new
                         {
                             EnrolmentId = 2,
                             CategoryId = 2,
                             EnrolmentDate = new DateTime(2026, 9, 1, 8, 0, 0, 0, DateTimeKind.Unspecified),
-                            ParticipantId = 4
+                            ParticipantId = 4,
+                            Status = "Confirmed"
                         },
                         new
                         {
                             EnrolmentId = 3,
                             CategoryId = 4,
                             EnrolmentDate = new DateTime(2026, 9, 1, 8, 0, 0, 0, DateTimeKind.Unspecified),
-                            ParticipantId = 3
+                            ParticipantId = 3,
+                            Status = "Confirmed"
                         });
                 });
 

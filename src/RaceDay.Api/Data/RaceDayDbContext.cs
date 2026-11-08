@@ -85,6 +85,7 @@ public class RaceDayDbContext : DbContext
             entity.ToTable("Enrolment");
             entity.HasKey(e => e.EnrolmentId);
             entity.Property(e => e.EnrolmentDate).HasColumnType("datetime").HasDefaultValueSql("GETDATE()");
+            entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(10).IsUnicode(false);
 
             entity.HasOne(e => e.Participant)
                 .WithMany(u => u.Enrolments)
@@ -154,9 +155,9 @@ public class RaceDayDbContext : DbContext
             new Category { CategoryId = 5, EventId = 3, Name = "15km", Distance = 15.00m, MaxParticipants = 200 });
 
         modelBuilder.Entity<Enrolment>().HasData(
-            new Enrolment { EnrolmentId = 1, ParticipantId = 3, CategoryId = 2, EnrolmentDate = seedDate },
-            new Enrolment { EnrolmentId = 2, ParticipantId = 4, CategoryId = 2, EnrolmentDate = seedDate },
-            new Enrolment { EnrolmentId = 3, ParticipantId = 3, CategoryId = 4, EnrolmentDate = seedDate });
+            new Enrolment { EnrolmentId = 1, ParticipantId = 3, CategoryId = 2, EnrolmentDate = seedDate, Status = EnrolmentStatus.Confirmed },
+            new Enrolment { EnrolmentId = 2, ParticipantId = 4, CategoryId = 2, EnrolmentDate = seedDate, Status = EnrolmentStatus.Confirmed },
+            new Enrolment { EnrolmentId = 3, ParticipantId = 3, CategoryId = 4, EnrolmentDate = seedDate, Status = EnrolmentStatus.Confirmed });
 
         modelBuilder.Entity<Result>().HasData(
             new Result { ResultId = 1, EnrolmentId = 1, FinishTime = new TimeSpan(0, 52, 14), Position = 3, RecordedAt = seedDate });
