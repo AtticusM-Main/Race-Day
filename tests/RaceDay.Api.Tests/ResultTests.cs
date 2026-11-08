@@ -109,7 +109,8 @@ public class ResultTests : ApiTestBase
         var leaderboard = await AnonymousClient().GetFromJsonAsync<List<ResultResponse>>(
             $"/api/categories/{category.CategoryId}/results", Json);
 
-        Assert.Equal(new int?[] { 1, 2 }, leaderboard!.Select(r => r.Position));
+        Assert.NotNull(leaderboard);
+        Assert.Equal(new int?[] { 1, 2 }, leaderboard.Select(r => r.Position));
         Assert.Equal(fastEnrolment.EnrolmentId, leaderboard[0].EnrolmentId);
     }
 }
