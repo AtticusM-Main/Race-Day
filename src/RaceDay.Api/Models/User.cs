@@ -9,6 +9,7 @@ public class User
 
     // Only the hashed password is ever stored, never the plain text.
     public string PasswordHash { get; set; } = string.Empty;
+    public string? ProfilePictureUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public Role Role { get; set; } = null!;

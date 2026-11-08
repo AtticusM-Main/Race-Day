@@ -13,6 +13,7 @@ public static class Mappings
         FullName = user.FullName,
         Email = user.Email,
         Role = user.Role.RoleName,
+        ProfilePictureUrl = user.ProfilePictureUrl,
         CreatedAt = user.CreatedAt
     };
 
@@ -35,6 +36,7 @@ public static class Mappings
         Location = ev.Location,
         Distance = ev.Distance,
         EventType = ev.EventType,
+        BannerImageUrl = ev.BannerImageUrl,
         OrganiserId = ev.OrganiserId,
         OrganiserName = ev.Organiser.FullName,
         CreatedAt = ev.CreatedAt,

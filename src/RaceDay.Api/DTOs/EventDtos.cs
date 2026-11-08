@@ -42,6 +42,9 @@ public class EventResponse
     public string Location { get; set; } = string.Empty;
     public decimal Distance { get; set; }
     public EventType EventType { get; set; }
+
+    /// <summary>Public URL of the banner image in Azure Blob Storage, if one was uploaded.</summary>
+    public string? BannerImageUrl { get; set; }
     public int OrganiserId { get; set; }
     public string OrganiserName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }

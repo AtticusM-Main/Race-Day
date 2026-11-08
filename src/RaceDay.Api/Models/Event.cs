@@ -19,6 +19,7 @@ public class Event
     // Main distance of the event in km (individual categories can have their own distance).
     public decimal Distance { get; set; }
     public EventType EventType { get; set; }
+    public string? BannerImageUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public User Organiser { get; set; } = null!;
