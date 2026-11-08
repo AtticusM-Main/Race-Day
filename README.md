@@ -1,6 +1,6 @@
 # RaceDay
 
-RaceDay is a backend system for organizing running events, managing participant enrollments, and tracking race results. I planned this project as a second year software development student to practice database design and API planning before writing any server code.
+RaceDay is a platform for organising running, walking and cycling events: organisers create events and categories, confirm entries and publish results, and participants find events, enter them and track their results. I built it as a second year software development student in three parts: planning (database design and API contract), an ASP.NET Core Web API, and an ASP.NET Core MVC web application with Azure Blob Storage, Docker and CI/CD.
 
 ## Designed concepts
 
@@ -44,6 +44,10 @@ API Endpoint Plan (EndpointPlan.md)
 ## Purpose and current status
 
 Part 1 (planning) produced the data model and the API contract in `docs/`. Part 2 implements that plan as an ASP.NET Core Web API. Part 3 adds an ASP.NET Core MVC web front end, Azure Blob Storage for images, Docker and CI/CD (see [Part 3](#part-3-the-mvc-web-application)).
+
+### Entity relationship diagram
+
+![RaceDay ERD](docs/RaceDayERD.jpg)
 
 ## Part 2: The API
 
@@ -137,7 +141,7 @@ src/RaceDay.Web/                  ASP.NET Core MVC application (.NET 10, Bootstr
   Models/                         API models and form/view models (validation attributes)
   Views/                          Razor views, one folder per controller, shared layout and partials
   wwwroot/css/site.css            RaceDay brand theme on top of Bootstrap
-tests/RaceDay.Web.Tests/          55 tests of the MVC pipeline against a fake API
+tests/RaceDay.Web.Tests/          56 tests of the MVC pipeline against a fake API
 Dockerfile                        Container image for the MVC application
 docker-compose.yml                SQL Server + API + web, started together
 .github/workflows/ci.yml          Builds and tests API and MVC, builds both Docker images
@@ -168,6 +172,40 @@ Sessions: after login the MVC application stores the API token, role, user id an
 | | **Profile**: same as participants |
 
 Invalid input is handled with client- and server-side validation. API errors (conflicts, not found, service down, expired session) are turned into friendly messages; raw exceptions are never shown.
+
+### Screenshots
+
+Taken from the running application with the seeded accounts. Image uploads in these screenshots were stored with the Azurite Blob Storage emulator.
+
+**Visitors**
+
+| Landing page | Register |
+|---|---|
+| ![Landing page](docs/screenshots/01-landing.png) | ![Register](docs/screenshots/02-register.png) |
+| **Log in** | **Validation on an empty login** |
+| ![Log in](docs/screenshots/03-login.png) | ![Login validation](docs/screenshots/04-login-validation.png) |
+
+**Participant**
+
+| Upcoming events with filters | Event details with banner |
+|---|---|
+| ![Events](docs/screenshots/05-events.png) | ![Event details](docs/screenshots/06-event-details.png) |
+| **My enrolments with status badges** | **My results** |
+| ![My enrolments](docs/screenshots/07-my-enrolments.png) | ![My results](docs/screenshots/08-my-results.png) |
+| **Profile picture uploaded** | **Organiser page blocked for a participant** |
+| ![Profile](docs/screenshots/09-profile-picture-uploaded.png) | ![Access denied](docs/screenshots/17-access-denied.png) |
+
+**Organiser**
+
+| Dashboard | Manage events |
+|---|---|
+| ![Dashboard](docs/screenshots/10-organiser-dashboard.png) | ![Manage events](docs/screenshots/11-organiser-events.png) |
+| **Banner uploaded** | **Edit event with banner** |
+| ![Banner uploaded](docs/screenshots/12-organiser-banner-uploaded.png) | ![Edit event](docs/screenshots/13-organiser-edit-event.png) |
+| **Categories** | **Enrolments and confirmation** |
+| ![Categories](docs/screenshots/14-organiser-categories.png) | ![Enrolments](docs/screenshots/15-organiser-enrolments.png) |
+| **Enter results** | **API in Swagger** |
+| ![Enter results](docs/screenshots/16-organiser-results-entry.png) | ![Swagger](docs/screenshots/18-api-swagger.png) |
 
 ### Running it locally (without Docker)
 
@@ -224,18 +262,18 @@ dotnet test
 ```
 
 - `RaceDay.Api.Tests` (127 tests): the API, including enrolment status, image uploads (against a fake image store), result totals and event filters.
-- `RaceDay.Web.Tests` (55 tests): the MVC pipeline against a fake API: redirects for visitors, role-specific access, login/logout and session behaviour, antiforgery, registration validation, participant pages and friendly handling of an API outage.
+- `RaceDay.Web.Tests` (56 tests): the MVC pipeline against a fake API: redirects for visitors, role-specific access, login/logout and session behaviour, antiforgery, registration validation, participant pages and friendly handling of an API outage.
 
 ### CI/CD
 
 `.github/workflows/ci.yml` runs on every push and pull request: it restores, builds the API and the MVC project, runs all tests, then builds both Docker images and smoke-tests the MVC container.
 
-### Part 3 video
+![CI run](docs/screenshots/19-ci-run.png)
 
-YouTube (unlisted): _add the link here_
+## Videos
 
-## CI
-<img width="1090" height="702" alt="image" src="https://github.com/user-attachments/assets/188a025f-3eb9-4ee6-9513-72a49d167d1e" />
+- Part 3 (MVC web application): _add the link here_
+- Part 1 (planning): https://youtu.be/al-fq-1F6W8
 
-## YOUTUBE LINK
-https://youtu.be/al-fq-1F6W8 
+## Part 1 CI
+<img width="1090" height="702" alt="Part 1 CI run" src="https://github.com/user-attachments/assets/188a025f-3eb9-4ee6-9513-72a49d167d1e" />
