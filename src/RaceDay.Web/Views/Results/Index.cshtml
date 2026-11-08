@@ -60,7 +60,8 @@
                                 <td>
                                     @if (r.Position is int position)
                                     {
-                                        <span class="rd-position">@Formatting.Ordinal(position) <small>out of @r.TotalFinishers @(r.TotalFinishers == 1 ? "finisher" : "finishers")</small></span>
+                                        @* The total only counts results recorded in RaceDay, so it is hidden when it is lower than the position. *@
+                                        <span class="rd-position">@Formatting.Ordinal(position) @if (r.TotalFinishers >= position) {<small>out of @r.TotalFinishers @(r.TotalFinishers == 1 ? "finisher" : "finishers")</small>}</span>
                                     }
                                     else
                                     {

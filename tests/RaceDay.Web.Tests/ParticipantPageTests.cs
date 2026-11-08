@@ -139,6 +139,15 @@ public class ParticipantPageTests : IClassFixture<WebTestFactory>
         Assert.Contains("2nd", html);
     }
 
+    [Fact]
+    public async Task MyResults_HidesTotalWhenFewerResultsRecordedThanPosition()
+    {
+        var html = await (await ParticipantAsync()).GetStringAsync("/Results");
+
+        Assert.Contains("12th", html);
+        Assert.DoesNotContain("out of 1 finisher", html);
+    }
+
     [Theory]
     [InlineData(1, "1st")]
     [InlineData(2, "2nd")]

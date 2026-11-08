@@ -158,7 +158,8 @@ public class FakeRaceDayApi : IRaceDayApi
             Data = new List<ResultDto>
             {
                 new() { ResultId = 1, EventName = "Test Autumn 10K", EventDate = DateTime.Now.AddMonths(-2), CategoryName = "10km", FinishTime = new TimeSpan(0, 47, 30), Position = 47, TotalFinishers = 312 },
-                new() { ResultId = 2, EventName = "Test Winter 5K", EventDate = DateTime.Now.AddMonths(-4), CategoryName = "5km", FinishTime = new TimeSpan(0, 24, 5), Position = 2, TotalFinishers = 80 }
+                new() { ResultId = 2, EventName = "Test Winter 5K", EventDate = DateTime.Now.AddMonths(-4), CategoryName = "5km", FinishTime = new TimeSpan(0, 24, 5), Position = 2, TotalFinishers = 80 },
+                new() { ResultId = 3, EventName = "Test Spring 21K", EventDate = DateTime.Now.AddMonths(-6), CategoryName = "21km", FinishTime = new TimeSpan(1, 35, 20), Position = 12, TotalFinishers = 1 }
             }
         });
 }
