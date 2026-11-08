@@ -65,3 +65,17 @@ This is the plan for the API before we start coding it.
 | GET | /api/categories/{id}/results | Get public leaderboard for a category sorted by finishing position. | None | None | 200 OK with ordered array of results. 404 Not Found. |
 
 
+
+## Part 3 Additions
+
+Added for the MVC web application.
+
+| HTTP Method | Route | Description | Role Required | Request Body | Expected Response |
+|---|---|---|---|---|---|
+| GET | /api/events?search=&type=&from=&to=&upcomingOnly= | List events with optional filters (all optional, combinable). | None | None | 200 OK with array of events. |
+| GET | /api/events/mine | List the events created by the logged-in organiser. | Organiser | None | 200 OK with array of events and category enrolment counts. |
+| POST | /api/events/{id}/banner | Upload or replace the event banner image (stored in Azure Blob Storage). | Organiser | multipart/form-data, field `file` (JPG, PNG or WebP, max 5 MB) | 200 OK with updated event. 400 Bad Request for an invalid image. 403 Forbidden if not the owner. 404 Not Found. 503 Service Unavailable if cloud storage is down. |
+| POST | /api/users/me/picture | Upload or replace the logged-in user's profile picture. | Any | multipart/form-data, field `file` | 200 OK with updated profile. 400 Bad Request. 503 Service Unavailable. |
+| PUT | /api/enrolments/{id}/status | Confirm an enrolment or set it back to pending. | Organiser | `{ status }` (`Pending` or `Confirmed`) | 200 OK with updated enrolment. 403 Forbidden if not the event owner. 404 Not Found. |
+
+Response changes: events include `bannerImageUrl`; profiles include `profilePictureUrl`; enrolments include `status`, and `resultId`, `finishTime` and `position` once a result exists; results include `totalFinishers` (how many participants have a result in the category).
