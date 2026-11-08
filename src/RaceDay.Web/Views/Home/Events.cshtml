@@ -1,0 +1,63 @@
+@model EventListViewModel
+@{
+    ViewData["Title"] = "Upcoming events";
+}
+<div class="container pb-5">
+    <div class="rd-page-head">
+        <div>
+            <h1>Upcoming events</h1>
+            <p>Find your next race and enter in a few clicks.</p>
+        </div>
+    </div>
+
+    <form asp-controller="Home" asp-action="Index" method="get" class="rd-card rd-card-body mb-4" aria-label="Filter events">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-4 col-md-6">
+                <label asp-for="Filter.Search" class="form-label"></label>
+                <input asp-for="Filter.Search" name="Search" class="form-control" placeholder="Name, location or keyword" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label asp-for="Filter.Type" class="form-label"></label>
+                <select asp-for="Filter.Type" name="Type" class="form-select" asp-items="Html.GetEnumSelectList<EventType>()">
+                    <option value="">All types</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label asp-for="Filter.From" class="form-label"></label>
+                <input asp-for="Filter.From" name="From" type="date" class="form-control" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label asp-for="Filter.To" class="form-label"></label>
+                <input asp-for="Filter.To" name="To" type="date" class="form-control" />
+            </div>
+            <div class="col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+                @if (Model.Filter.HasFilters)
+                {
+                    <a class="btn btn-outline-dark" asp-action="Index" asp-route-Search="" title="Clear filters">Clear</a>
+                }
+            </div>
+        </div>
+    </form>
+
+    @if (ViewData["LoadError"] is string loadError)
+    {
+        <div class="alert alert-danger" role="alert">@loadError</div>
+    }
+    else if (Model.Events.Count == 0)
+    {
+        <partial name="_EmptyState" model='("🏁", "No events found", Model.Filter.HasFilters ? "Try changing or clearing your filters." : "There are no upcoming events yet. Check back soon.")' />
+    }
+    else
+    {
+        <p class="text-muted" role="status">@Model.Events.Count @(Model.Events.Count == 1 ? "event" : "events") found</p>
+        <div class="row g-4">
+            @foreach (var ev in Model.Events)
+            {
+                <div class="col-md-6 col-xl-4">
+                    <partial name="_EventCard" model="ev" />
+                </div>
+            }
+        </div>
+    }
+</div>

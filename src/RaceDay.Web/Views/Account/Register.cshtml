@@ -1,0 +1,52 @@
+@model RegisterRequest
+@{
+    ViewData["Title"] = "Register";
+}
+<div class="container">
+    <div class="rd-card rd-auth-card">
+        <div class="rd-card-body">
+            <h1 class="mb-1">Join RaceDay</h1>
+            <p class="text-muted">Create your free account in under a minute.</p>
+
+            <form asp-action="Register" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" autocomplete="name" autofocus />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                    <div class="form-text">At least 8 characters with an uppercase letter, a lowercase letter and a digit.</div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Role" class="form-label"></label>
+                    <select asp-for="Role" class="form-select">
+                        <option value="Participant">Participant - I want to race</option>
+                        <option value="Organiser">Organiser - I run events</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" data-busy="Creating account...">Create account</button>
+            </form>
+
+            <hr />
+            <p class="mb-0 text-center">Already registered? <a asp-action="Login">Log in</a></p>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
