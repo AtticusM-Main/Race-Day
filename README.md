@@ -43,7 +43,7 @@ API Endpoint Plan (EndpointPlan.md)
 
 ## Purpose and current status
 
-Part 1 (planning) produced the data model and the API contract in `docs/`. Part 2 implements that plan as an ASP.NET Core Web API.
+Part 1 (planning) produced the data model and the API contract in `docs/`. Part 2 implements that plan as an ASP.NET Core Web API. Part 3 adds an ASP.NET Core MVC web front end, Azure Blob Storage for images, Docker and CI/CD (see [Part 3](#part-3-the-mvc-web-application)).
 
 ## Part 2: The API
 
@@ -113,6 +113,126 @@ The tests start the full API in memory (`WebApplicationFactory`) against an EF C
 - **EnrolmentTests**: participants enrolling, with checks on the saved participant, event and category links; duplicate, full, past and missing-category cases; organisers blocked from enrolling; cancellations.
 - **ResultTests**: organisers recording and updating results, participants viewing their own results, and the leaderboard order.
 
+
+## Part 3: The MVC web application
+
+Part 3 builds the web front end for RaceDay. The MVC application (`src/RaceDay.Web`) never touches the database or Azure: every read and write is a call to the Part 2 REST API, which now also stores images in Azure Blob Storage.
+
+```
+Browser  -->  RaceDay.Web (MVC, session)  -->  RaceDay.Api (REST, JWT)  -->  SQL Server
+                                                      |
+                                                      +-->  Azure Blob Storage (banners, profile pictures)
+```
+
+### What was added
+
+```
+src/RaceDay.Web/                  ASP.NET Core MVC application (.NET 10, Bootstrap 5)
+  Controllers/                    Account, Home, Events, Enrolments, Results, Profile (participant)
+                                  Organiser, OrganiserEvents, OrganiserCategories,
+                                  OrganiserEnrolments, OrganiserResults (organiser)
+  Services/IRaceDayApi.cs         The only data source: a typed HttpClient wrapper around the API
+  Services/UserSession.cs         Signed-in user, role and API token held in server-side session
+  Filters/SessionAuthorize.cs     Redirects visitors to login and blocks the wrong role
+  Models/                         API models and form/view models (validation attributes)
+  Views/                          Razor views, one folder per controller, shared layout and partials
+  wwwroot/css/site.css            RaceDay brand theme on top of Bootstrap
+tests/RaceDay.Web.Tests/          55 tests of the MVC pipeline against a fake API
+Dockerfile                        Container image for the MVC application
+docker-compose.yml                SQL Server + API + web, started together
+.github/workflows/ci.yml          Builds and tests API and MVC, builds both Docker images
+```
+
+API additions made for the web application (all covered by tests, 127 API tests in total):
+
+| Change | Why |
+|---|---|
+| `Enrolment.Status` (`Pending` or `Confirmed`) and `PUT /api/enrolments/{id}/status` | Colour-coded enrolment statuses; organisers confirm entries |
+| `Event.BannerImageUrl`, `User.ProfilePictureUrl`, `POST /api/events/{id}/banner`, `POST /api/users/me/picture` | Image uploads stored in Azure Blob Storage |
+| `IImageStorage` / `AzureBlobImageStorage` | Uploads to a blob container and returns the public URL; validates JPG/PNG/WebP up to 5 MB |
+| `ResultResponse.TotalFinishers` | "47th out of 312 finishers" on My Results |
+| `GET /api/events/mine` and filters on `GET /api/events` (`search`, `type`, `from`, `to`, `upcomingOnly`) | Organiser dashboard and the participant filters, done in the API so the MVC app holds no business logic |
+| Recorded result details on enrolments | Lets organisers see who still needs a result |
+
+### Roles and navigation
+
+Sessions: after login the MVC application stores the API token, role, user id and name in ASP.NET Core **server-side session**. The browser only receives the session cookie (HttpOnly). `SessionAuthorize` guards every protected controller: visitors without a session are redirected to the login page (and sent back to the page they wanted after logging in), and a user of the wrong role gets an "access denied" page. Logging out clears the session and returns to the login page. Sessions end when the API token expires (120 minutes).
+
+| Participant | Organiser |
+|---|---|
+| **Events**: upcoming events with search, type and date filters | **Dashboard**: events created, enrolments per event, upcoming dates |
+| **Event details**: full information, categories and places left, enter an event by choosing a category | **Manage Events**: create, edit, delete (name, description, date, location, distance, type) and upload a banner |
+| **My Enrolments**: every entry with a status badge (green Confirmed, amber Pending) and cancel | **Categories**: add, edit and remove age or distance categories |
+| **My Results**: event, date, category, finish time and position (for example "47th out of 312 finishers") | **Enrolments**: participants, categories and status per event; confirm entries |
+| **Profile**: update name and email, upload a profile picture | **Enter results**: capture finish time and position after the event; saving publishes the result |
+| | **Profile**: same as participants |
+
+Invalid input is handled with client- and server-side validation. API errors (conflicts, not found, service down, expired session) are turned into friendly messages; raw exceptions are never shown.
+
+### Running it locally (without Docker)
+
+1. Start the API (see [Running it](#running-it)): `dotnet run --project src/RaceDay.Api`. It listens on `http://localhost:5259`.
+2. In a second terminal start the web application: `dotnet run --project src/RaceDay.Web`. It listens on `http://localhost:5039` and reads the API address from `Api:BaseUrl` in `src/RaceDay.Web/appsettings.json`.
+3. Open `http://localhost:5039`. Seeded accounts all use the password `Password123!`:
+   - Organisers: `naledi.khumalo@raceday.co.za`, `johan.botha@raceday.co.za`
+   - Participants: `thandiwe.nkosi@example.com`, `ryan.pillay@example.com`
+
+### Azure Blob Storage
+
+The API stores banners and profile pictures in a blob container (`raceday-images` by default). The web application only uploads the file to the API; it never talks to Azure.
+
+1. In the Azure portal create a **Storage account** and copy its connection string (Access keys).
+2. Give the API the connection string with .NET user secrets (keeps it out of git):
+
+   ```
+   dotnet user-secrets init --project src/RaceDay.Api
+   dotnet user-secrets set "BlobStorage:ConnectionString" "<your connection string>" --project src/RaceDay.Api
+   ```
+
+   or set the environment variable `BlobStorage__ConnectionString`. `BlobStorage:ContainerName` is optional.
+3. The container is created on first upload with public read access on blobs so that the stored URL can be shown in an `<img>` tag. If the storage account does not allow public access, the container is created private and images will not display until public blob access is enabled.
+
+Without a connection string everything else works; uploads show "Image storage unavailable" instead of failing. For local testing without an Azure account you can use the [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) emulator with `BlobStorage:ConnectionString=UseDevelopmentStorage=true`.
+
+### Docker
+
+The MVC application runs in a container. It needs the API address in `Api__BaseUrl`.
+
+**Start the web application with one command** (run it from the repository root; the API must be running on port 5259, for example with `dotnet run --project src/RaceDay.Api`):
+
+```
+docker build -t raceday-web . && docker run --rm -p 8080:8080 -e Api__BaseUrl=http://host.docker.internal:5259 raceday-web
+```
+
+Then open `http://localhost:8080`. On Linux add `--add-host=host.docker.internal:host-gateway` to the `docker run` command. To point the container at an API that is running somewhere else, change `Api__BaseUrl`.
+
+The Dockerfile uses a multi-stage build (SDK image to build, the smaller ASP.NET runtime image to run), restores packages in their own cached layer, runs as the non-root `app` user, listens on port 8080, has a health check and keeps all settings in environment variables, so the container behaves the same as running locally.
+
+**Run the whole platform (SQL Server, API and web) with Docker Compose:**
+
+```
+cp .env.example .env        # then edit .env (SQL password, JWT key, optional Azure connection string)
+docker compose up --build
+```
+
+Web: `http://localhost:8080` &middot; API and Swagger: `http://localhost:5259/swagger`.
+
+### Running the tests
+
+```
+dotnet test
+```
+
+- `RaceDay.Api.Tests` (127 tests): the API, including enrolment status, image uploads (against a fake image store), result totals and event filters.
+- `RaceDay.Web.Tests` (55 tests): the MVC pipeline against a fake API: redirects for visitors, role-specific access, login/logout and session behaviour, antiforgery, registration validation, participant pages and friendly handling of an API outage.
+
+### CI/CD
+
+`.github/workflows/ci.yml` runs on every push and pull request: it restores, builds the API and the MVC project, runs all tests, then builds both Docker images and smoke-tests the MVC container.
+
+### Part 3 video
+
+YouTube (unlisted): _add the link here_
 
 ## CI
 <img width="1090" height="702" alt="image" src="https://github.com/user-attachments/assets/188a025f-3eb9-4ee6-9513-72a49d167d1e" />
