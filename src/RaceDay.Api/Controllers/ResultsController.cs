@@ -82,7 +82,7 @@ public class ResultsController : ControllerBase
         await _db.SaveChangesAsync();
 
         var created = await ResultsWithDetails().AsNoTracking().FirstAsync(r => r.ResultId == result.ResultId);
-        return Created("/api/results/me", created.ToResponse());
+        return Created("/api/results/me", created.ToResponse(await CountFinishers(created.Enrolment.CategoryId)));
     }
 
     /// <summary>
@@ -126,7 +126,7 @@ public class ResultsController : ControllerBase
         result.RecordedAt = DateTime.Now;
         await _db.SaveChangesAsync();
 
-        return Ok(result.ToResponse());
+        return Ok(result.ToResponse(await CountFinishers(result.Enrolment.CategoryId)));
     }
 
     /// <summary>
@@ -148,7 +148,8 @@ public class ResultsController : ControllerBase
             .OrderByDescending(r => r.Enrolment.Category.Event.EventDate)
             .ToListAsync();
 
-        return Ok(results.Select(r => r.ToResponse()));
+        var totals = await FinisherCounts(results.Select(r => r.Enrolment.CategoryId));
+        return Ok(results.Select(r => r.ToResponse(totals[r.Enrolment.CategoryId])));
     }
 
     /// <summary>
@@ -173,7 +174,20 @@ public class ResultsController : ControllerBase
             .ThenBy(r => r.FinishTime)
             .ToListAsync();
 
-        return Ok(results.Select(r => r.ToResponse()));
+        return Ok(results.Select(r => r.ToResponse(results.Count)));
+    }
+
+    private Task<int> CountFinishers(int categoryId) =>
+        _db.Results.CountAsync(r => r.Enrolment.CategoryId == categoryId);
+
+    private async Task<Dictionary<int, int>> FinisherCounts(IEnumerable<int> categoryIds)
+    {
+        var ids = categoryIds.Distinct().ToList();
+        return await _db.Results
+            .Where(r => ids.Contains(r.Enrolment.CategoryId))
+            .GroupBy(r => r.Enrolment.CategoryId)
+            .Select(g => new { CategoryId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CategoryId, x => x.Count);
     }
 
     private Task<bool> PositionTaken(int categoryId, int? position, int? excludeResultId) =>

@@ -26,6 +26,11 @@ public class EnrolmentResponse
 
     /// <summary>Pending until the Organiser confirms the entry.</summary>
     public EnrolmentStatus Status { get; set; }
+
+    /// <summary>Set once the Organiser has recorded a result for this enrolment.</summary>
+    public int? ResultId { get; set; }
+    public TimeSpan? FinishTime { get; set; }
+    public int? Position { get; set; }
 }
 
 public class UpdateEnrolmentStatusRequest

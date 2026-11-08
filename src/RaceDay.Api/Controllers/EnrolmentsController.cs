@@ -25,6 +25,7 @@ public class EnrolmentsController : ControllerBase
 
     private IQueryable<Enrolment> EnrolmentsWithDetails() => _db.Enrolments
         .Include(e => e.Participant)
+        .Include(e => e.Result)
         .Include(e => e.Category).ThenInclude(c => c.Event);
 
     /// <summary>

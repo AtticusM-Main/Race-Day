@@ -55,10 +55,13 @@ public static class Mappings
         CategoryId = enrolment.CategoryId,
         CategoryName = enrolment.Category.Name,
         EnrolmentDate = enrolment.EnrolmentDate,
-        Status = enrolment.Status
+        Status = enrolment.Status,
+        ResultId = enrolment.Result?.ResultId,
+        FinishTime = enrolment.Result?.FinishTime,
+        Position = enrolment.Result?.Position
     };
 
-    public static ResultResponse ToResponse(this Result result) => new()
+    public static ResultResponse ToResponse(this Result result, int totalFinishers = 0) => new()
     {
         ResultId = result.ResultId,
         EnrolmentId = result.EnrolmentId,
@@ -71,6 +74,7 @@ public static class Mappings
         CategoryName = result.Enrolment.Category.Name,
         FinishTime = result.FinishTime,
         Position = result.Position,
+        TotalFinishers = totalFinishers,
         RecordedAt = result.RecordedAt
     };
 }

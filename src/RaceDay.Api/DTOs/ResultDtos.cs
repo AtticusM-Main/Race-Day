@@ -45,5 +45,8 @@ public class ResultResponse
     public string CategoryName { get; set; } = string.Empty;
     public TimeSpan FinishTime { get; set; }
     public int? Position { get; set; }
+
+    /// <summary>How many participants have a recorded result in this category, e.g. 47th out of 312.</summary>
+    public int TotalFinishers { get; set; }
     public DateTime RecordedAt { get; set; }
 }
